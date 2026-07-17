@@ -8,7 +8,11 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  console.error('[ERROR]', err);
+  console.error('[ERROR]', {
+    name: err.name,
+    message: err.message,
+    timestamp: new Date().toISOString(),
+  });
 
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({

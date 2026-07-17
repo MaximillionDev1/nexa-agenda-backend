@@ -1,4 +1,3 @@
-// Horário de funcionamento padrão
 export const DEFAULT_BUSINESS_HOURS = {
   MONDAY: { start: '09:00', end: '18:00' },
   TUESDAY: { start: '09:00', end: '18:00' },
@@ -6,13 +5,11 @@ export const DEFAULT_BUSINESS_HOURS = {
   THURSDAY: { start: '09:00', end: '18:00' },
   FRIDAY: { start: '09:00', end: '18:00' },
   SATURDAY: { start: '09:00', end: '16:00' },
-  SUNDAY: null, // Fechado
+  SUNDAY: null,
 };
 
-// Intervalo padrão entre horários (minutos)
 export const TIME_SLOT_INTERVAL = 30;
 
-// Serviços padrão para seed
 export const DEFAULT_SERVICES = [
   {
     name: 'Corte Masculino',
@@ -51,7 +48,6 @@ export const DEFAULT_SERVICES = [
   },
 ];
 
-// Status de agendamento
 export const APPOINTMENT_STATUSES = {
   SCHEDULED: 'SCHEDULED',
   CONFIRMED: 'CONFIRMED',
@@ -59,7 +55,6 @@ export const APPOINTMENT_STATUSES = {
   CANCELED: 'CANCELED',
 } as const;
 
-// Mensagens de erro
 export const ERROR_MESSAGES = {
   INVALID_CREDENTIALS: 'E-mail ou senha incorretos',
   UNAUTHORIZED: 'Não autorizado',
