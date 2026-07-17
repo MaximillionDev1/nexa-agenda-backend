@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  COMPLETED
+  CANCELED
+}
+
+// ============================================
+// MODELS
+// ============================================
+
+model Admin {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("admins")
+}
+
+model Service {
+  id           String        @id @default(cuid())
+  name         String
+  description  String?
+  duration     Int           // minutos
+  price        Decimal       @db.Decimal(10, 2)
+  icon         String        // nome do ícone Lucide
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  appointments Appointment[]
+
+  @@index([isActive])
+  @@map("services")
+}
+
+model Appointment {
+  id              String            @id @default(cuid())
+  publicCode      String            @unique
+  customerName    String
+  customerPhone   String            // normalizado: 11999999999
+  serviceId       String
+  service         Service           @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  appointmentDate DateTime          // data sem hora
+  startTime       DateTime          // data + hora início
+  endTime         DateTime          // data + hora fim
+  notes           String?
+  status          AppointmentStatus @default(SCHEDULED)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([appointmentDate])
+  @@index([startTime])
+  @@index([status])
+  @@index([customerPhone])
+  @@map("appointments")
+}
+
+model BusinessHours {
+  id        String   @id @default(cuid())
+  dayOfWeek Int      // 0-6 (Sunday-Saturday)
+  startTime String   // "09:00"
+  endTime   String   // "18:00"
+  isOpen    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([dayOfWeek])
+  @@map("business_hours")
+}
