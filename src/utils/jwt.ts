@@ -1,13 +1,15 @@
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { env } from '../config/env.js';
 import { IJwtPayload } from '../types/index.js';
 
 export const generateToken = (payload: IJwtPayload): string => {
-  return jwt.sign(payload as jwt.JwtPayload, env.jwtSecret as any, {
+  const token = jwt.sign(payload, env.jwtSecret, {
     expiresIn: env.jwtExpiresIn,
-  } as jwt.SignOptions);
+  } as any);
+  
+  return token;
 };
 
 export const verifyToken = (token: string): IJwtPayload => {
-  return jwt.verify(token, env.jwtSecret as any) as IJwtPayload;
+  return jwt.verify(token, env.jwtSecret) as IJwtPayload;
 };

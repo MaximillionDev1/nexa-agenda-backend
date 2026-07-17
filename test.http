@@ -1,0 +1,30 @@
+### ==========================================
+### 1. HEALTH CHECK
+### ==========================================
+
+GET http://localhost:3333/api/health
+
+### ==========================================
+### 2. LISTAR SERVIÇOS
+### ==========================================
+
+GET http://localhost:3333/api/services
+
+### ==========================================
+### 3. LOGIN - COPIE O TOKEN DA RESPOSTA
+### ==========================================
+
+POST http://localhost:3333/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@nexaagenda.com",
+  "password": "Admin@123"
+}
+
+### ==========================================
+### 4. DASHBOARD (use o token do login acima)
+### ==========================================
+
+GET http://localhost:3333/api/admin/dashboard
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNtcnBqMDB2czAwMDBiOXhmaG0ybGl4MDUiLCJlbWFpbCI6ImFkbWluQG5leGFhZ2VuZGEuY29tIiwiaWF0IjoxNzg0MzI5NzU0LCJleHAiOjE3ODQ5MzQ1NTR9.UKdmhas08-Iwr673oN54eXad-bExybjcBARWBQLFmiM
