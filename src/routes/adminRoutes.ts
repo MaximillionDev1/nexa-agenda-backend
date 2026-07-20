@@ -144,4 +144,13 @@ router.patch('/services/:id/toggle', (req, res, next) =>
   serviceController.toggleStatus(req, res, next)
 );
 
+/**
+ * DELETE /api/services/:id
+ * Exclui um serviço definitivamente.
+ * Bloqueado (409) se houver agendamentos vinculados — nesse caso, usar toggle para desativar.
+ */
+router.delete('/services/:id', (req, res, next) => 
+  serviceController.delete(req, res, next)
+);
+
 export { router as adminRoutes };

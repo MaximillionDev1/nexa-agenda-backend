@@ -59,4 +59,12 @@ export class ServiceRepository {
       data: { isActive: !service.isActive },
     });
   }
+
+  async countAppointments(serviceId: string): Promise<number> {
+    return prisma.appointment.count({ where: { serviceId } });
+  }
+
+  async delete(id: string): Promise<void> {
+    await prisma.service.delete({ where: { id } });
+  }
 }

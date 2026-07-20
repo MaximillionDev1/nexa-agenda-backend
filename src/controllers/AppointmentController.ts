@@ -72,30 +72,30 @@ export class AppointmentController {
     }
   }
 
-  async lookup(req: Request, res: Response, next: NextFunction) {
-    try {
-      const parsed = lookupAppointmentSchema.safeParse(req.body);
-
-      if (!parsed.success) {
-        const message = parsed.error.errors[0]?.message || 'Validação falhou';
-        throw new ValidationError(message, 'VALIDATION_ERROR');
-      }
-
-      const { publicCode, customerPhone } = parsed.data;
-
-      const appointment = await this.appointmentService.lookupAppointment(
-        publicCode,
-        customerPhone
-      );
-
-      res.status(200).json({
-        success: true,
-        data: appointment,
-      });
-    } catch (error) {
-      next(error);
+ async lookup(req: Request, res: Response, next: NextFunction) {
+  try {
+    
+    const parsed = lookupAppointmentSchema.safeParse(req.body);
+    
+    
+    if (!parsed.success) {
+      const message = parsed.error.errors[0]?.message || 'Validação falhou';
+      throw new ValidationError(message, 'VALIDATION_ERROR');
     }
+
+    const appointment = await this.appointmentService.lookupAppointment(
+      parsed.data.publicCode,
+      parsed.data.customerPhone
+    );
+
+    res.json({
+      success: true,
+      data: appointment,
+    });
+  } catch (error) {
+    next(error);
   }
+}
 
   async getAvailability(req: Request, res: Response, next: NextFunction) {
     try {

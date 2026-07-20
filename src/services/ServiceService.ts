@@ -1,5 +1,5 @@
 import { ServiceRepository } from '../repositories/ServiceRepository.js';
-import { NotFoundError, ValidationError } from '../errors/AppError.js';
+import { NotFoundError, ValidationError, ConflictError } from '../errors/AppError.js';
 import { ERROR_MESSAGES } from '../config/constants.js';
 
 export class ServiceService {
@@ -51,5 +51,20 @@ export class ServiceService {
     const service = await this.getServiceById(id);
 
     return this.serviceRepository.toggleActive(id);
+  }
+
+  async deleteService(id: string) {
+    await this.getServiceById(id); // valida existência (lança NotFoundError se não existir)
+
+    const appointmentsCount = await this.serviceRepository.countAppointments(id);
+
+    if (appointmentsCount > 0) {
+      throw new ConflictError(
+        'Não é possível excluir um serviço que possui agendamentos vinculados. Desative-o em vez de excluir para preservar o histórico.',
+        'SERVICE_HAS_APPOINTMENTS'
+      );
+    }
+
+    await this.serviceRepository.delete(id);
   }
 }

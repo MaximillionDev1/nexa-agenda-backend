@@ -17,7 +17,6 @@ import {
 } from '../utils/availability.js';
 import { 
   normalizePhone, 
-  formatPhone 
 } from '../utils/phone.js';
 import { generatePublicCode } from '../utils/publicCode.js';
 import { prisma } from '../config/database.js';
@@ -83,6 +82,10 @@ async createAppointment(data: {
   startTime: string;
   notes?: string;
 }) {
+  console.log('=== DEBUG: createAppointment ===');
+  console.log('customerPhone recebido:', data.customerPhone);
+  console.log('customerPhone length:', data.customerPhone.length);
+  console.log('customerPhone chars:', data.customerPhone.split('').map(c => `${c}(${c.charCodeAt(0)})`));
   // 1. Validar serviço
   const service = await this.serviceRepository.findById(data.serviceId);
   if (!service) {
@@ -98,19 +101,28 @@ async createAppointment(data: {
     );
   }
 
-  // 2. Validar e normalizar data (CORREÇÃO DO TIMEZONE)
+  // 2. Validar e normalizar telefone ANTES da transação
+  let normalizedPhone: string;
+  try {
+    normalizedPhone = normalizePhone(data.customerPhone);
+  } catch (error) {
+    throw new ValidationError(
+      'Telefone inválido. Use um telefone com 10 ou 11 dígitos',
+      'INVALID_PHONE'
+    );
+  }
+
+  // 3. Fazer parse seguro da data (YYYY-MM-DD)
   let appointmentDate: Date;
   
-  // Se receber ISO string, fazer parse sem timezone shift
   if (data.appointmentDate.includes('T')) {
     appointmentDate = new Date(data.appointmentDate);
   } else {
-    // Se receber apenas data (YYYY-MM-DD), fazer parse seguro
     const [year, month, day] = data.appointmentDate.split('-').map(Number);
     appointmentDate = new Date(year, month - 1, day, 0, 0, 0, 0);
   }
 
-  // Validar se não é data passada
+  // 4. Validar se não é data passada
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
@@ -121,7 +133,7 @@ async createAppointment(data: {
     );
   }
 
-  // 3. Construir startTime completo (CORREÇÃO: usar a data normalizada)
+  // 5. Construir startTime completo
   const [hours, minutes] = data.startTime.split(':').map(Number);
   const startTimeDateTime = new Date(
     appointmentDate.getFullYear(),
@@ -133,7 +145,7 @@ async createAppointment(data: {
     0
   );
 
-  // 4. Validar se não está no passado
+  // 6. Validar se não está no passado
   if (startTimeDateTime < new Date()) {
     throw new ValidationError(
       ERROR_MESSAGES.INVALID_DATE,
@@ -141,12 +153,15 @@ async createAppointment(data: {
     );
   }
 
-  // 5. Calcular endTime
+  // 7. Calcular endTime
   const endTime = addMinutes(startTimeDateTime, service.duration);
 
-  // 6. Usar transação para evitar conflitos
+  // 8. Gerar publicCode FORA da transação
+  const publicCode = generatePublicCode();
+
+  // 9. Usar transação apenas para criar o appointment
   const appointment = await prisma.$transaction(async (tx) => {
-    // Verificar conflito dentro da transação
+    // Verificar conflito
     const hasConflict = await tx.appointment.findFirst({
       where: {
         serviceId: data.serviceId,
@@ -155,7 +170,7 @@ async createAppointment(data: {
           { startTime: { lt: endTime } },
           { endTime: { gt: startTimeDateTime } },
         ],
-      }
+      },
     });
 
     if (hasConflict) {
@@ -165,10 +180,7 @@ async createAppointment(data: {
       );
     }
 
-    // Criar agendamento
-    const normalizedPhone = normalizePhone(data.customerPhone);
-    const publicCode = generatePublicCode();
-
+    // Criar appointment
     return tx.appointment.create({
       data: {
         publicCode,
@@ -188,6 +200,10 @@ async createAppointment(data: {
       include: { service: true },
     });
   });
+
+  console.log('=== DEBUG: Appointment criado ===');
+  console.log('publicCode:', appointment.publicCode);
+  console.log('appointment:', appointment);
 
   return appointment;
 }

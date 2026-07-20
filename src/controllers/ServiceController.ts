@@ -96,4 +96,16 @@ export class ServiceController {
       next(error);
     }
   }
+
+  async delete(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+
+      await this.serviceService.deleteService(id);
+
+      res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  }
 }
