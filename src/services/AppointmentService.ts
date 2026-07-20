@@ -72,101 +72,125 @@ export class AppointmentService {
   /**
    * Cria um novo agendamento com validações completas
    */
-  async createAppointment(data: {
-    customerName: string;
-    customerPhone: string;
-    serviceId: string;
-    appointmentDate: string;
-    startTime: string;
-    notes?: string;
-  }) {
-    // 1. Validar serviço
-    const service = await this.serviceRepository.findById(data.serviceId);
+/**
+ * Cria um novo agendamento com validações completas
+ */
+async createAppointment(data: {
+  customerName: string;
+  customerPhone: string;
+  serviceId: string;
+  appointmentDate: string;
+  startTime: string;
+  notes?: string;
+}) {
+  // 1. Validar serviço
+  const service = await this.serviceRepository.findById(data.serviceId);
+  if (!service) {
+    throw new NotFoundError(
+      ERROR_MESSAGES.SERVICE_NOT_FOUND,
+      'SERVICE_NOT_FOUND'
+    );
+  }
+  if (!service.isActive) {
+    throw new ValidationError(
+      ERROR_MESSAGES.SERVICE_INACTIVE,
+      'SERVICE_INACTIVE'
+    );
+  }
 
-    if (!service) {
-      throw new NotFoundError(
-        ERROR_MESSAGES.SERVICE_NOT_FOUND,
-        'SERVICE_NOT_FOUND'
-      );
-    }
+  // 2. Validar e normalizar data (CORREÇÃO DO TIMEZONE)
+  let appointmentDate: Date;
+  
+  // Se receber ISO string, fazer parse sem timezone shift
+  if (data.appointmentDate.includes('T')) {
+    appointmentDate = new Date(data.appointmentDate);
+  } else {
+    // Se receber apenas data (YYYY-MM-DD), fazer parse seguro
+    const [year, month, day] = data.appointmentDate.split('-').map(Number);
+    appointmentDate = new Date(year, month - 1, day, 0, 0, 0, 0);
+  }
 
-    if (!service.isActive) {
-      throw new ValidationError(
-        ERROR_MESSAGES.SERVICE_INACTIVE,
-        'SERVICE_INACTIVE'
-      );
-    }
+  // Validar se não é data passada
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  if (appointmentDate < today) {
+    throw new ValidationError(
+      ERROR_MESSAGES.INVALID_DATE,
+      'INVALID_DATE'
+    );
+  }
 
-    // 2. Validar data
-    const appointmentDate = parseISO(data.appointmentDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+  // 3. Construir startTime completo (CORREÇÃO: usar a data normalizada)
+  const [hours, minutes] = data.startTime.split(':').map(Number);
+  const startTimeDateTime = new Date(
+    appointmentDate.getFullYear(),
+    appointmentDate.getMonth(),
+    appointmentDate.getDate(),
+    hours,
+    minutes,
+    0,
+    0
+  );
 
-    if (appointmentDate < today) {
-      throw new ValidationError(
-        ERROR_MESSAGES.INVALID_DATE,
-        'INVALID_DATE'
-      );
-    }
+  // 4. Validar se não está no passado
+  if (startTimeDateTime < new Date()) {
+    throw new ValidationError(
+      ERROR_MESSAGES.INVALID_DATE,
+      'PAST_TIME'
+    );
+  }
 
-    // 3. Construir startTime completo
-    const [hours, minutes] = data.startTime.split(':').map(Number);
-    const startTimeDateTime = new Date(appointmentDate);
-    startTimeDateTime.setHours(hours, minutes, 0, 0);
+  // 5. Calcular endTime
+  const endTime = addMinutes(startTimeDateTime, service.duration);
 
-    // 4. Validar se não está no passado
-    if (startTimeDateTime < new Date()) {
-      throw new ValidationError(
-        ERROR_MESSAGES.INVALID_DATE,
-        'PAST_TIME'
-      );
-    }
-
-    // 5. Calcular endTime
-    const endTime = addMinutes(startTimeDateTime, service.duration);
-
-    // 6. Usar transação para evitar conflitos
-    const appointment = await prisma.$transaction(async (tx) => {
-      // Verificar conflito dentro da transação
-      const hasConflict = await tx.appointment.findFirst({
-        where: {
-          status: { not: 'CANCELED' },
-          AND: [
-            { startTime: { lt: endTime } },
-            { endTime: { gt: startTimeDateTime } },
-          ],
-        },
-      });
-
-      if (hasConflict) {
-        throw new ConflictError(
-          ERROR_MESSAGES.TIME_SLOT_UNAVAILABLE,
-          'TIME_SLOT_UNAVAILABLE'
-        );
+  // 6. Usar transação para evitar conflitos
+  const appointment = await prisma.$transaction(async (tx) => {
+    // Verificar conflito dentro da transação
+    const hasConflict = await tx.appointment.findFirst({
+      where: {
+        serviceId: data.serviceId,
+        status: { not: 'CANCELED' },
+        AND: [
+          { startTime: { lt: endTime } },
+          { endTime: { gt: startTimeDateTime } },
+        ],
       }
-
-      // Criar agendamento
-      const normalizedPhone = normalizePhone(data.customerPhone);
-      const publicCode = generatePublicCode();
-
-      return tx.appointment.create({
-        data: {
-          publicCode,
-          customerName: data.customerName,
-          customerPhone: normalizedPhone,
-          serviceId: data.serviceId,
-          appointmentDate,
-          startTime: startTimeDateTime,
-          endTime,
-          notes: data.notes,
-          status: 'SCHEDULED',
-        },
-        include: { service: true },
-      });
     });
 
-    return appointment;
-  }
+    if (hasConflict) {
+      throw new ConflictError(
+        ERROR_MESSAGES.TIME_SLOT_UNAVAILABLE,
+        'TIME_SLOT_UNAVAILABLE'
+      );
+    }
+
+    // Criar agendamento
+    const normalizedPhone = normalizePhone(data.customerPhone);
+    const publicCode = generatePublicCode();
+
+    return tx.appointment.create({
+      data: {
+        publicCode,
+        customerName: data.customerName,
+        customerPhone: normalizedPhone,
+        serviceId: data.serviceId,
+        appointmentDate: new Date(
+          appointmentDate.getFullYear(),
+          appointmentDate.getMonth(),
+          appointmentDate.getDate()
+        ),
+        startTime: startTimeDateTime,
+        endTime,
+        notes: data.notes,
+        status: 'SCHEDULED',
+      },
+      include: { service: true },
+    });
+  });
+
+  return appointment;
+}
 
   /**
    * Obtém horários disponíveis para uma data e serviço
