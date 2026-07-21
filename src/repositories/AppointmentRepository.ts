@@ -177,7 +177,14 @@ export class AppointmentRepository {
       .filter((apt) => apt.status !== 'CANCELED')
       .reduce((sum, apt) => sum + apt.service.price.toNumber(), 0);
 
-    return { completed, projected, total: appointments.length };
+    // Soma do valor de TODOS os agendamentos do dia (incluindo cancelados),
+    // representando o volume total movimentado no dia.
+    const total = appointments.reduce(
+      (sum, apt) => sum + apt.service.price.toNumber(),
+      0
+    );
+
+    return { completed, projected, total };
   }
 
   /**
