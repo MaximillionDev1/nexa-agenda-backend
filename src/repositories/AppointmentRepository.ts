@@ -2,7 +2,7 @@ import { prisma } from '../config/database.js';
 import { Appointment, AppointmentStatus } from '@prisma/client';
 
 export interface FindAppointmentsFilters {
-  date?: Date;
+  date?: string; // formato "yyyy-MM-dd"
   status?: AppointmentStatus;
   serviceId?: string;
   customerName?: string;
@@ -26,11 +26,14 @@ export class AppointmentRepository {
     const where: any = {};
 
     if (date) {
-      const startOfDay = new Date(date);
-      startOfDay.setHours(0, 0, 0, 0);
+      // Parse seguro "yyyy-MM-dd" sem passar por new Date(string), que o JS
+      // interpreta como UTC meia-noite e pode deslocar o dia em um em
+      // timezones atrás do UTC (mesma causa raiz já corrigida em
+      // AppointmentService.createAppointment).
+      const [year, month, day] = date.split('-').map(Number);
 
-      const endOfDay = new Date(date);
-      endOfDay.setHours(23, 59, 59, 999);
+      const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
+      const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
 
       where.appointmentDate = {
         gte: startOfDay,
