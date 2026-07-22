@@ -112,54 +112,80 @@ async function main() {
     console.log('✅ Horários de funcionamento criados');
 
     // ============================================
-    // 4. CRIAR AGENDAMENTOS DE EXEMPLO
-    // ============================================
-    console.log('📝 Criando agendamentos de exemplo...');
+// 4. CRIAR AGENDAMENTOS DE EXEMPLO
+// ============================================
+console.log('📝 Criando agendamentos de exemplo...');
 
-    const services = await prisma.service.findMany();
-    const corte = services.find((s) => s.name === 'Corte Masculino');
+const services = await prisma.service.findMany();
+const corte = services.find((service) => service.name === 'Corte Masculino');
 
-    if (corte) {
-      // Agendamento hoje
-      const today = new Date();
-      today.setHours(14, 0, 0, 0);
-      const endToday = addHours(today, 1);
+if (corte) {
+  const today = new Date();
+  today.setHours(14, 0, 0, 0);
 
-      await prisma.appointment.create({
-        data: {
-          publicCode: 'NX-ABC123',
-          customerName: 'João Silva',
-          customerPhone: '11999999999',
-          serviceId: corte.id,
-          appointmentDate: today,
-          startTime: today,
-          endTime: endToday,
-          notes: 'Cliente regular',
-          status: 'CONFIRMED',
-        },
-      });
+  const endToday = addHours(today, 1);
 
-      // Agendamento amanhã
-      const tomorrow = addDays(today, 1);
-      tomorrow.setHours(10, 0, 0, 0);
-      const endTomorrow = addHours(tomorrow, 1);
+  await prisma.appointment.upsert({
+    where: {
+      publicCode: 'NX-ABC123',
+    },
+    update: {
+      customerName: 'João Silva',
+      customerPhone: '11999999999',
+      serviceId: corte.id,
+      appointmentDate: today,
+      startTime: today,
+      endTime: endToday,
+      notes: 'Cliente regular',
+      status: 'CONFIRMED',
+    },
+    create: {
+      publicCode: 'NX-ABC123',
+      customerName: 'João Silva',
+      customerPhone: '11999999999',
+      serviceId: corte.id,
+      appointmentDate: today,
+      startTime: today,
+      endTime: endToday,
+      notes: 'Cliente regular',
+      status: 'CONFIRMED',
+    },
+  });
 
-      await prisma.appointment.create({
-        data: {
-          publicCode: 'NX-XYZ789',
-          customerName: 'Maria Santos',
-          customerPhone: '11988888888',
-          serviceId: corte.id,
-          appointmentDate: tomorrow,
-          startTime: tomorrow,
-          endTime: endTomorrow,
-          notes: 'Primeira vez',
-          status: 'SCHEDULED',
-        },
-      });
-    }
+  const tomorrow = addDays(today, 1);
+  tomorrow.setHours(10, 0, 0, 0);
 
-    console.log('✅ Agendamentos de exemplo criados');
+  const endTomorrow = addHours(tomorrow, 1);
+
+  await prisma.appointment.upsert({
+    where: {
+      publicCode: 'NX-XYZ789',
+    },
+    update: {
+      customerName: 'Maria Santos',
+      customerPhone: '11988888888',
+      serviceId: corte.id,
+      appointmentDate: tomorrow,
+      startTime: tomorrow,
+      endTime: endTomorrow,
+      notes: 'Primeira vez',
+      status: 'SCHEDULED',
+    },
+    create: {
+      publicCode: 'NX-XYZ789',
+      customerName: 'Maria Santos',
+      customerPhone: '11988888888',
+      serviceId: corte.id,
+      appointmentDate: tomorrow,
+      startTime: tomorrow,
+      endTime: endTomorrow,
+      notes: 'Primeira vez',
+      status: 'SCHEDULED',
+    },
+  });
+}
+
+console.log('✅ Agendamentos de exemplo criados');
 
     console.log('\n🎉 Seed executado com sucesso!');
   } catch (error) {
