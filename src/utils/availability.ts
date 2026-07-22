@@ -1,5 +1,5 @@
 import { addMinutes, isBefore, format } from 'date-fns';
-import { prisma } from '../config/database';
+import { prisma } from '../config/database.js';
 import { DEFAULT_BUSINESS_HOURS, TIME_SLOT_INTERVAL } from '../config/constants.js';
 
 interface TimeSlot {
