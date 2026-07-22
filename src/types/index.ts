@@ -10,13 +10,19 @@ export interface IService {
   updatedAt: string;
 }
 
-export type AppointmentStatus = "SCHEDULED" | "CONFIRMED" | "COMPLETED" | "CANCELED";
+export type AppointmentStatus =
+  | "SCHEDULED"
+  | "CONFIRMED"
+  | "COMPLETED"
+  | "CANCELED";
 
 export interface IAppointment {
   id: string;
   publicCode: string;
+  serviceId: string;
   customerName: string;
   customerPhone: string;
+  customerEmail?: string;
   service: IService;
   appointmentDate: string;
   startTime: string;
@@ -35,6 +41,11 @@ export interface IAdmin {
   updatedAt: string;
 }
 
+export interface IJwtPayload {
+  id: string;
+  email: string;
+}
+
 export interface ILoginRequest {
   email: string;
   password: string;
@@ -48,6 +59,7 @@ export interface ILoginResponse {
 export interface ICreateAppointmentRequest {
   customerName: string;
   customerPhone: string;
+  customerEmail?: string;
   serviceId: string;
   appointmentDate: string;
   startTime: string;
@@ -102,19 +114,4 @@ export interface INextAvailableSlot {
   date: string;
   time: string;
   formatted: string;
-}
-
-// Verificar se IAppointment tem customerEmail. Se não tiver, adicionar:
-
-export interface IAppointment {
-  id: string;
-  serviceId: string;
-  customerName: string;
-  customerPhone: string;
-  customerEmail?: string; // Adicionar se não existir
-  appointmentDate: string;
-  status: "SCHEDULED" | "CONFIRMED" | "COMPLETED" | "CANCELED";
-  service: IService;
-  createdAt: string;
-  updatedAt: string;
 }

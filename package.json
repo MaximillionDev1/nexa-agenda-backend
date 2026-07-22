@@ -4,12 +4,14 @@
   "description": "API backend for Nexa Agenda - Service scheduling platform",
   "main": "dist/server.js",
   "type": "module",
-  "scripts": {
+ "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "start": "node dist/server.js",
+    "start:prod": "prisma migrate deploy && node dist/server.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:seed": "tsx prisma/seed.ts",
     "prisma:studio": "prisma studio",
     "lint": "eslint src --ext .ts",

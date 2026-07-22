@@ -1,8 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { env } from '../config/env.js';
+
 import { UnauthorizedError } from '../errors/AppError.js';
-import { IJwtPayload } from '../types/index.js';
+import type { IJwtPayload } from '../types/index.js';
+import { verifyToken } from '../utils/jwt.js';
 
 declare global {
   namespace Express {
@@ -14,30 +15,46 @@ declare global {
 
 export const authMiddleware = (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
-) => {
+): void => {
   try {
     const authHeader = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new UnauthorizedError('Token não fornecido', 'NO_TOKEN');
+    if (!authHeader?.startsWith('Bearer ')) {
+      throw new UnauthorizedError(
+        'Token não fornecido',
+        'NO_TOKEN'
+      );
     }
 
-    const token = authHeader.substring(7);
+    const token = authHeader.slice(7).trim();
 
-    const decoded = jwt.verify(token, env.jwtSecret) as IJwtPayload;
+    if (!token) {
+      throw new UnauthorizedError(
+        'Token não fornecido',
+        'NO_TOKEN'
+      );
+    }
 
-    req.admin = decoded;
+    req.admin = verifyToken(token);
 
     next();
-  } catch (error) {
-    if (error instanceof jwt.JsonWebTokenError) {
-      throw new UnauthorizedError('Token inválido', 'INVALID_TOKEN');
-    }
+  } catch (error: unknown) {
     if (error instanceof jwt.TokenExpiredError) {
-      throw new UnauthorizedError('Token expirado', 'EXPIRED_TOKEN');
+      throw new UnauthorizedError(
+        'Token expirado',
+        'EXPIRED_TOKEN'
+      );
     }
+
+    if (error instanceof jwt.JsonWebTokenError) {
+      throw new UnauthorizedError(
+        'Token inválido',
+        'INVALID_TOKEN'
+      );
+    }
+
     throw error;
   }
 };
