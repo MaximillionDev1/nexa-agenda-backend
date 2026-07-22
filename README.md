@@ -1,278 +1,349 @@
-# Nexa Agenda — Backend
+<div align="center">
 
-API REST responsável pelas regras de negócio, autenticação, disponibilidade de horários e gerenciamento de agendamentos da plataforma **Nexa Agenda**.
+# 🗓️ Nexa Agenda — Backend
 
-O projeto foi desenvolvido como parte de um teste técnico para uma oportunidade de **Desenvolvedor Full Stack Júnior**, demonstrando conhecimentos em Node.js, TypeScript, Express, PostgreSQL, Prisma ORM, autenticação JWT, validação de dados, segurança e arquitetura em camadas.
+### REST API for Appointment Scheduling and Business Management
 
-<p align="center">
-  <a href="https://nexa-agenda-backend-production.up.railway.app/api/health">
-    <img src="https://img.shields.io/badge/API-Online-success" alt="API online">
-  </a>
-  <a href="https://nexa-agenda-frontend.vercel.app">
-    <img src="https://img.shields.io/badge/Frontend-Vercel-black?logo=vercel" alt="Frontend na Vercel">
-  </a>
-  <a href="https://nexa-agenda-backend-production.up.railway.app">
-    <img src="https://img.shields.io/badge/Backend-Railway-0B0D0E?logo=railway" alt="Backend no Railway">
-  </a>
-</p>
+API REST responsável pelas regras de negócio, autenticação administrativa, cálculo de disponibilidade, prevenção de conflitos e gerenciamento de serviços e agendamentos da plataforma **Nexa Agenda**.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Node.js-339933?logo=node.js&logoColor=white" alt="Node.js">
-  <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" alt="TypeScript">
-  <img src="https://img.shields.io/badge/Express-000000?logo=express&logoColor=white" alt="Express">
-  <img src="https://img.shields.io/badge/Prisma-5.22-2D3748?logo=prisma&logoColor=white" alt="Prisma">
-  <img src="https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL">
-  <img src="https://img.shields.io/badge/JWT-000000?logo=jsonwebtokens&logoColor=white" alt="JWT">
-</p>
+Desenvolvida com **Node.js**, **Express**, **TypeScript**, **Prisma ORM** e **PostgreSQL**, aplicando arquitetura em camadas, validação com Zod, autenticação JWT, transações e proteções HTTP.
 
----
+<br>
 
-## Sumário
+[![Node.js](https://img.shields.io/badge/Node.js-20+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Express](https://img.shields.io/badge/Express-4-000000?logo=express&logoColor=white)](https://expressjs.com/)
+[![Prisma](https://img.shields.io/badge/Prisma-5-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![JWT](https://img.shields.io/badge/Auth-JWT-000000?logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
+[![Railway](https://img.shields.io/badge/Deploy-Railway-0B0D0E?logo=railway&logoColor=white)](https://railway.app/)
 
-* [Sobre o projeto](#sobre-o-projeto)
-* [Demonstração](#demonstração)
-* [Principais destaques](#principais-destaques)
-* [Funcionalidades](#funcionalidades)
-* [Regras de negócio](#regras-de-negócio)
-* [Arquitetura](#arquitetura)
-* [Tecnologias](#tecnologias)
-* [Banco de dados](#banco-de-dados)
-* [Endpoints](#endpoints)
-* [Autenticação](#autenticação)
-* [Segurança](#segurança)
-* [Como executar](#como-executar)
-* [Variáveis de ambiente](#variáveis-de-ambiente)
-* [Scripts disponíveis](#scripts-disponíveis)
-* [Deploy](#deploy)
-* [Decisões técnicas](#decisões-técnicas)
-* [Melhorias futuras](#melhorias-futuras)
-* [Autor](#autor)
+<br>
+
+[**🌐 Frontend**](https://nexa-agenda-frontend.vercel.app)
+&nbsp;&nbsp;•&nbsp;&nbsp;
+[**⚙️ API**](https://nexa-agenda-backend-production.up.railway.app)
+&nbsp;&nbsp;•&nbsp;&nbsp;
+[**❤️ Health Check**](https://nexa-agenda-backend-production.up.railway.app/api/health)
+&nbsp;&nbsp;•&nbsp;&nbsp;
+[**🖥️ Frontend Repository**](https://github.com/MaximillionDev1/nexa-agenda-frontend)
+
+</div>
 
 ---
 
-## Sobre o projeto
+## 📑 Table of Contents
+
+- [About the Project](#-about-the-project)
+- [Application Demo](#-application-demo)
+- [Engineering Highlights](#-engineering-highlights)
+- [Core Features](#-core-features)
+- [Business Rules](#-business-rules)
+- [Availability Engine](#-availability-engine)
+- [Appointment Status](#-appointment-status)
+- [System Architecture](#-system-architecture)
+- [Project Structure](#-project-structure)
+- [Database Model](#-database-model)
+- [Technology Stack](#-technology-stack)
+- [API Reference](#-api-reference)
+- [Authentication](#-authentication)
+- [Validation and Error Handling](#-validation-and-error-handling)
+- [Security](#-security)
+- [Running Locally](#-running-locally)
+- [Environment Variables](#-environment-variables)
+- [Database Setup](#-database-setup)
+- [Available Scripts](#-available-scripts)
+- [Deployment](#-deployment)
+- [Technical Decisions](#-technical-decisions)
+- [Testing Strategy](#-testing-strategy)
+- [What This Project Demonstrates](#-what-this-project-demonstrates)
+- [Roadmap](#-roadmap)
+- [Author](#-author)
+
+---
+
+## 📖 About the Project
 
 O **Nexa Agenda** é uma plataforma Full Stack criada para digitalizar o processo de agendamento e gerenciamento de serviços.
 
-Este repositório contém o backend da aplicação, responsável por:
+Este repositório contém o backend da aplicação, responsável por concentrar as regras críticas do sistema e fornecer uma API REST para o frontend.
 
-* disponibilizar os serviços cadastrados;
-* calcular horários disponíveis;
-* validar conflitos entre agendamentos;
-* cadastrar e consultar atendimentos;
-* autenticar administradores;
-* proteger rotas administrativas;
-* fornecer indicadores operacionais;
-* controlar o status dos agendamentos;
-* persistir as informações em um banco PostgreSQL.
+A API realiza:
 
-A API foi construída com foco em separação de responsabilidades, consistência dos dados, segurança e facilidade de manutenção.
+- disponibilização dos serviços cadastrados;
+- cálculo dos horários disponíveis;
+- prevenção de conflitos entre atendimentos;
+- criação e consulta de agendamentos;
+- geração de códigos públicos;
+- autenticação de administradores;
+- proteção de rotas privadas;
+- gerenciamento de serviços;
+- gerenciamento do ciclo de vida dos agendamentos;
+- cálculo de indicadores operacionais;
+- persistência dos dados em PostgreSQL.
 
-O frontend que consome esta API está disponível em:
+A lógica de negócio permanece centralizada no backend para evitar que alterações realizadas no cliente comprometam a integridade dos dados.
 
-* **Aplicação:** https://nexa-agenda-frontend.vercel.app
-* **Repositório:** https://github.com/MaximillionDev1/nexa-agenda-frontend
+### Problem
+
+Em negócios que trabalham com horários marcados, o controle manual pode causar:
+
+- reservas duplicadas;
+- serviços agendados fora do expediente;
+- dificuldade para localizar atendimentos;
+- baixa visibilidade sobre a disponibilidade;
+- inconsistência na alteração de status;
+- dependência de validações feitas apenas pela interface.
+
+### Solution
+
+```text
+Cliente ou administrador
+          │
+          ▼
+       REST API
+          │
+          ▼
+Validações e regras de negócio
+          │
+          ▼
+      Prisma ORM
+          │
+          ▼
+      PostgreSQL
+```
 
 ---
 
-## Demonstração
+## 🎬 Application Demo
 
-### Aplicação em produção
+### Production
 
-| Serviço      | Endereço                                                         |
-| ------------ | ---------------------------------------------------------------- |
-| Frontend     | https://nexa-agenda-frontend.vercel.app                          |
-| Backend      | https://nexa-agenda-backend-production.up.railway.app            |
-| Health check | https://nexa-agenda-backend-production.up.railway.app/api/health |
+| Resource | URL |
+|---|---|
+| Frontend | https://nexa-agenda-frontend.vercel.app |
+| Backend API | https://nexa-agenda-backend-production.up.railway.app |
+| Health Check | https://nexa-agenda-backend-production.up.railway.app/api/health |
+| Frontend Repository | https://github.com/MaximillionDev1/nexa-agenda-frontend |
 
-### Credenciais de demonstração
+### Demo Credentials
 
-> As credenciais abaixo são destinadas exclusivamente à demonstração e avaliação técnica do projeto.
+> [!IMPORTANT]
+> A conta abaixo é pública e destinada exclusivamente à demonstração e avaliação técnica. Não reutilize estas credenciais em outros ambientes.
 
-| Campo  | Valor                  |
-| ------ | ---------------------- |
+| Field | Value |
+|---|---|
 | E-mail | `admin@nexaagenda.com` |
-| Senha  | `Admin@123`            |
+| Password | `Admin@123` |
 
-> Em uma aplicação comercial, credenciais de demonstração não devem ser utilizadas em ambientes com dados reais.
+### Full Flow
 
-### Fluxo completo
+<p align="center">
+  <img src="./docs/images/demo.gif" alt="Demonstração completa do Nexa Agenda" width="900">
+</p>
 
-![Demonstração do Nexa Agenda](./docs/images/demo.gif)
+### Administrative Dashboard
 
-### Dashboard administrativo
+<p align="center">
+  <img src="./docs/images/admin-dashboard.png" alt="Dashboard administrativo do Nexa Agenda" width="900">
+</p>
 
-![Dashboard administrativo](./docs/images/admin-dashboard.png)
+### Appointment Management
 
-### Gestão de agendamentos
+<p align="center">
+  <img src="./docs/images/admin-appointments.png" alt="Gerenciamento de agendamentos do Nexa Agenda" width="900">
+</p>
 
-![Gestão de agendamentos](./docs/images/admin-appointments.png)
-
----
-
-## Principais destaques
-
-* API REST desenvolvida com Node.js, Express e TypeScript
-* Arquitetura organizada em camadas
-* Banco de dados PostgreSQL com Prisma ORM
-* Autenticação administrativa utilizando JWT
-* Senhas protegidas com hash por meio do bcrypt
-* Validação de entradas utilizando Zod
-* Cálculo de disponibilidade baseado em horários de funcionamento
-* Prevenção de conflitos e sobreposição de agendamentos
-* Criação de agendamentos utilizando transação no banco
-* Consulta pública protegida por código e telefone
-* Rotas administrativas protegidas por middleware
-* Tratamento centralizado de erros
-* Proteção com Helmet, CORS e rate limiting
-* Seed configurado para preparação do ambiente
-* Deploy da API e do banco de dados no Railway
+> A documentação visual completa da interface está disponível no repositório do frontend.
 
 ---
 
-## Funcionalidades
+## 🏆 Engineering Highlights
 
-### Serviços
-
-* Listagem pública de serviços ativos
-* Consulta de serviço por identificador
-* Cadastro de novos serviços
-* Atualização de serviços existentes
-* Ativação e desativação de serviços
-* Exclusão de serviços
-
-### Disponibilidade
-
-* Consulta de horários disponíveis por data e serviço
-* Cálculo baseado na duração de cada serviço
-* Respeito ao horário de funcionamento de cada dia
-* Intervalos de horários organizados em blocos de 30 minutos
-* Exclusão de horários já ocupados
-* Desconsideração de agendamentos cancelados
-* Consulta do próximo horário disponível
-
-### Agendamentos
-
-* Criação pública de agendamentos
-* Geração de código público de identificação
-* Consulta de agendamento por código e telefone
-* Listagem administrativa de agendamentos
-* Consulta individual por identificador
-* Filtros por data, status, serviço e cliente
-* Atualização do status do atendimento
-* Cancelamento de agendamentos
-* Exclusão de agendamentos
-* Estatísticas dos atendimentos do dia
-* Consulta da receita prevista do dia
-
-### Administração
-
-* Login do administrador
-* Geração de token JWT
-* Validação da sessão autenticada
-* Consulta dos dados do administrador autenticado
-* Dashboard com indicadores operacionais
-* Proteção de rotas privadas
+- API REST desenvolvida com Node.js, Express e TypeScript.
+- Arquitetura organizada em camadas.
+- PostgreSQL integrado por meio do Prisma ORM.
+- Autenticação administrativa com JWT.
+- Senhas protegidas com bcrypt.
+- Entradas validadas com Zod.
+- Disponibilidade calculada conforme horário de funcionamento e duração do serviço.
+- Prevenção de conflitos por sobreposição de intervalos.
+- Nova verificação de disponibilidade dentro da transação de criação.
+- Consulta pública protegida por código e telefone.
+- Rotas administrativas protegidas por middleware.
+- Tratamento centralizado de erros.
+- Proteções com Helmet, CORS e rate limiting.
+- Migrations e seed para preparação dos ambientes.
+- Deploy da API e do PostgreSQL no Railway.
 
 ---
 
-## Regras de negócio
+## ⚙️ Core Features
 
-A disponibilidade de horários é uma das principais responsabilidades da API.
+### Services
 
-As regras foram centralizadas no backend para impedir que alterações ou manipulações realizadas no cliente comprometam a consistência dos dados.
+- Listagem pública dos serviços ativos.
+- Consulta de serviço por identificador.
+- Cadastro administrativo de novos serviços.
+- Atualização de serviços existentes.
+- Ativação e desativação.
+- Exclusão de serviços.
 
-### Validação de datas e horários
+### Availability
+
+- Consulta de horários disponíveis por data e serviço.
+- Cálculo baseado na duração de cada serviço.
+- Respeito ao horário de funcionamento de cada dia.
+- Geração de slots em intervalos de 30 minutos.
+- Exclusão dos períodos já ocupados.
+- Desconsideração dos agendamentos cancelados.
+- Consulta do próximo horário disponível.
+
+### Appointments
+
+- Criação pública de agendamentos.
+- Geração de código público de identificação.
+- Consulta por código público e telefone.
+- Listagem administrativa.
+- Consulta individual por ID.
+- Filtros por data, status, serviço e cliente.
+- Atualização de status.
+- Cancelamento.
+- Exclusão.
+- Estatísticas dos atendimentos do dia.
+- Consulta da receita prevista do dia.
+
+### Administration
+
+- Login administrativo.
+- Emissão de token JWT.
+- Validação da sessão.
+- Consulta do administrador autenticado.
+- Dashboard com indicadores operacionais.
+- Proteção das rotas privadas.
+
+---
+
+## 🧠 Business Rules
+
+As regras críticas foram implementadas no backend para preservar a consistência do sistema independentemente do cliente que consome a API.
+
+### Date and Time Validation
 
 A API não permite:
 
-* agendamentos em datas passadas;
-* horários anteriores ao momento atual;
-* agendamentos fora do horário de funcionamento;
-* agendamentos utilizando serviços inexistentes;
-* agendamentos utilizando serviços inativos;
-* reservas que ultrapassem o período de funcionamento;
-* reservas que entrem em conflito com atendimentos existentes.
+- agendamentos em datas passadas;
+- horários anteriores ao momento atual;
+- reservas fora do horário de funcionamento;
+- utilização de serviços inexistentes;
+- utilização de serviços inativos;
+- reservas que ultrapassem o fechamento;
+- reservas conflitantes com atendimentos existentes.
 
-### Horário de funcionamento
+### Public Lookup
 
-O seed inicial configura os seguintes períodos:
+Para consultar um agendamento sem autenticação administrativa, o cliente deve informar:
 
-| Dia           | Funcionamento  |
-| ------------- | -------------- |
-| Segunda-feira | 09:00 às 18:00 |
-| Terça-feira   | 09:00 às 18:00 |
-| Quarta-feira  | 09:00 às 18:00 |
-| Quinta-feira  | 09:00 às 18:00 |
-| Sexta-feira   | 09:00 às 18:00 |
-| Sábado        | 09:00 às 16:00 |
-| Domingo       | Fechado        |
+- código público;
+- telefone usado no cadastro.
 
-Os horários disponíveis são calculados considerando:
+O telefone é normalizado antes da comparação, evitando divergências provocadas por máscaras ou caracteres de formatação.
 
-1. o dia selecionado;
-2. o horário de abertura;
-3. o horário de fechamento;
-4. a duração do serviço;
-5. os agendamentos já cadastrados;
-6. o status dos agendamentos existentes;
-7. o horário atual, quando a data consultada é o dia corrente.
+### Transactional Creation
 
-### Detecção de conflitos
-
-Antes de persistir um agendamento, a API verifica se o intervalo solicitado possui interseção com algum agendamento existente.
-
-A validação considera:
+A criação do agendamento utiliza uma transação no banco de dados. Dentro dessa operação, a disponibilidade é verificada novamente antes da persistência.
 
 ```text
-Novo atendimento
-├── horário inicial
-└── horário final
-
-Atendimento existente
-├── horário inicial
-└── horário final
+Solicitação recebida
+          │
+          ▼
+Validar entrada
+          │
+          ▼
+Validar serviço
+          │
+          ▼
+Validar data e horário
+          │
+          ▼
+Calcular horário final
+          │
+          ▼
+Validar expediente
+          │
+          ▼
+Abrir transação
+          │
+          ▼
+Verificar conflito novamente
+          │
+          ▼
+Criar agendamento
+          │
+          ▼
+Confirmar transação
 ```
 
-Existe conflito quando os intervalos se sobrepõem, ainda que os horários iniciais sejam diferentes.
+---
+
+## ⏰ Availability Engine
+
+A disponibilidade é calculada dinamicamente considerando:
+
+1. dia solicitado;
+2. horário de abertura;
+3. horário de fechamento;
+4. duração do serviço;
+5. slots de 30 minutos;
+6. agendamentos já cadastrados;
+7. status dos agendamentos existentes;
+8. horário atual, quando a consulta ocorre para o mesmo dia.
+
+### Default Business Hours
+
+| Day | Business Hours |
+|---|---|
+| Monday | 09:00–18:00 |
+| Tuesday | 09:00–18:00 |
+| Wednesday | 09:00–18:00 |
+| Thursday | 09:00–18:00 |
+| Friday | 09:00–18:00 |
+| Saturday | 09:00–16:00 |
+| Sunday | Closed |
+
+### Conflict Detection
+
+Existe conflito quando:
+
+```text
+newStart < existingEnd
+AND
+newEnd > existingStart
+```
+
+```text
+Existing appointment: 10:00 ───────── 11:00
+New appointment:             10:30 ───────── 11:30
+                               ▲
+                            Conflict
+```
 
 Agendamentos com status `CANCELED` não bloqueiam novos horários.
 
-### Criação transacional
-
-A criação do agendamento utiliza uma transação no banco de dados.
-
-Dentro da operação, a API realiza novamente a verificação de disponibilidade antes da persistência, reduzindo o risco de inconsistências entre a consulta inicial e a confirmação do atendimento.
-
-### Consulta pública
-
-Para consultar um agendamento sem autenticação administrativa, o cliente precisa informar:
-
-* código público do agendamento;
-* telefone utilizado no cadastro.
-
-O telefone é normalizado antes da comparação, evitando diferenças causadas por máscaras ou formatações.
-
 ---
 
-## Status dos agendamentos
+## 📌 Appointment Status
 
-Os agendamentos podem assumir os seguintes estados:
-
-| Status      | Descrição              |
-| ----------- | ---------------------- |
-| `SCHEDULED` | Atendimento agendado   |
+| Status | Description |
+|---|---|
+| `SCHEDULED` | Atendimento agendado |
 | `CONFIRMED` | Atendimento confirmado |
-| `COMPLETED` | Atendimento concluído  |
-| `CANCELED`  | Atendimento cancelado  |
-
-O status é utilizado tanto no gerenciamento administrativo quanto no cálculo de disponibilidade.
+| `COMPLETED` | Atendimento concluído |
+| `CANCELED` | Atendimento cancelado |
 
 ---
 
-## Arquitetura
-
-A API utiliza uma arquitetura em camadas para separar as responsabilidades do sistema.
+## 🏗️ System Architecture
 
 ```text
 HTTP Request
@@ -281,16 +352,19 @@ HTTP Request
     Routes
       │
       ▼
+  Middlewares
+      │
+      ▼
  Controllers
       │
       ▼
    Services
       │
       ▼
-Repositories
+ Repositories
       │
       ▼
- Prisma ORM
+  Prisma ORM
       │
       ▼
  PostgreSQL
@@ -298,73 +372,31 @@ Repositories
 
 ### Routes
 
-Responsáveis por:
-
-* definir os endpoints;
-* associar métodos HTTP;
-* aplicar middlewares;
-* encaminhar requisições aos controllers.
-
-### Controllers
-
-Responsáveis pela camada HTTP:
-
-* recebem parâmetros, query strings e corpo da requisição;
-* acionam os serviços correspondentes;
-* retornam a resposta ao cliente;
-* encaminham erros ao tratamento centralizado.
-
-### Services
-
-Concentram as regras de negócio da aplicação:
-
-* autenticação;
-* disponibilidade;
-* criação de agendamentos;
-* validação de conflitos;
-* atualização de status;
-* cálculo de indicadores;
-* gerenciamento de serviços.
-
-### Repositories
-
-Responsáveis pela comunicação com o banco de dados através do Prisma ORM.
-
-Essa camada mantém consultas e operações de persistência separadas das regras de negócio.
-
-### Schemas
-
-Utilizam Zod para validar:
-
-* corpo das requisições;
-* parâmetros de rota;
-* filtros;
-* credenciais;
-* dados de criação e atualização.
+Definem endpoints, métodos HTTP, middlewares e encaminhamento aos controllers.
 
 ### Middlewares
 
-Aplicam comportamentos compartilhados:
+Aplicam autenticação JWT, proteção de rotas, segurança e tratamento compartilhado.
 
-* autenticação JWT;
-* tratamento centralizado de erros;
-* proteção de rotas;
-* segurança da API.
+### Controllers
 
-### Utils
+Recebem parâmetros, query strings e body, acionam os services e constroem a resposta HTTP.
 
-Reúnem funções auxiliares, como:
+### Services
 
-* geração de códigos públicos;
-* criação e validação de tokens;
-* cálculo de horários;
-* normalização de telefone;
-* manipulação de datas;
-* validação de disponibilidade.
+Concentram autenticação, disponibilidade, conflitos, criação de agendamentos, indicadores e gerenciamento de serviços.
+
+### Repositories
+
+Isolam as operações de persistência realizadas com Prisma.
+
+### Schemas
+
+Utilizam Zod para validar body, parâmetros, filtros, credenciais e dados de criação ou atualização.
 
 ---
 
-## Estrutura do projeto
+## 📂 Project Structure
 
 ```text
 nexa-agenda-backend/
@@ -380,6 +412,7 @@ nexa-agenda-backend/
 ├── src/
 │   ├── config/
 │   ├── controllers/
+│   ├── errors/
 │   ├── middlewares/
 │   ├── repositories/
 │   ├── routes/
@@ -391,151 +424,113 @@ nexa-agenda-backend/
 │   └── server.ts
 ├── .env.example
 ├── package.json
+├── test.http
 ├── tsconfig.json
 └── README.md
 ```
 
-> A estrutura pode apresentar pequenas diferenças conforme a evolução do projeto, mas mantém a separação entre as principais responsabilidades da API.
-
 ---
 
-## Tecnologias
-
-### Core
-
-| Tecnologia | Responsabilidade                |
-| ---------- | ------------------------------- |
-| Node.js    | Ambiente de execução JavaScript |
-| Express    | Construção da API REST          |
-| TypeScript | Tipagem estática                |
-| PostgreSQL | Banco de dados relacional       |
-| Prisma ORM | Modelagem e acesso ao banco     |
-
-### Validação e autenticação
-
-| Tecnologia     | Responsabilidade                       |
-| -------------- | -------------------------------------- |
-| Zod            | Validação de entradas                  |
-| JSON Web Token | Autenticação e autorização             |
-| bcrypt         | Hash e comparação de senhas            |
-| dotenv         | Carregamento das variáveis de ambiente |
-
-### Segurança
-
-| Tecnologia         | Responsabilidade                        |
-| ------------------ | --------------------------------------- |
-| Helmet             | Configuração de cabeçalhos HTTP seguros |
-| CORS               | Controle das origens autorizadas        |
-| Express Rate Limit | Limitação de requisições                |
-
-### Qualidade e testes
-
-| Tecnologia          | Responsabilidade                    |
-| ------------------- | ----------------------------------- |
-| Vitest              | Ferramenta de testes                |
-| Supertest           | Testes de integração para endpoints |
-| TypeScript Compiler | Validação e compilação do código    |
-
----
-
-## Banco de dados
-
-O banco de dados é modelado utilizando Prisma ORM e PostgreSQL.
-
-### Entidades
+## 🗄️ Database Model
 
 ```text
 Admin
-Service
-Appointment
+
+Service 1 ───────────── N Appointment
+
 BusinessHours
+    └── defines weekly availability
 ```
 
 ### Admin
 
 Representa os usuários autorizados a acessar o painel administrativo.
 
-Principais responsabilidades:
-
-* armazenar os dados do administrador;
-* manter a senha protegida por hash;
-* permitir autenticação na área privada.
-
 ### Service
 
-Representa os serviços disponíveis para agendamento.
-
-Um serviço pode possuir:
-
-* nome;
-* descrição;
-* duração;
-* preço;
-* situação ativa ou inativa.
-
-A duração do serviço influencia diretamente o cálculo dos horários disponíveis.
+Armazena nome, descrição, duração, preço e situação ativa ou inativa.
 
 ### Appointment
 
-Representa um atendimento agendado.
-
-O registro relaciona:
-
-* cliente;
-* telefone;
-* serviço;
-* data;
-* horário inicial;
-* horário final;
-* status;
-* código público.
+Relaciona cliente, telefone, serviço, data, horário inicial, horário final, status e código público.
 
 ### BusinessHours
 
-Armazena os horários de funcionamento para cada dia da semana.
+Armazena o horário de funcionamento de cada dia da semana.
 
-Essas informações são utilizadas no cálculo de disponibilidade.
+### Migrations and Seed
 
-### Relacionamento simplificado
-
-```text
-Service
-   │
-   │ 1
-   │
-   │ N
-   ▼
-Appointment
-
-BusinessHours
-   │
-   └── define os períodos disponíveis por dia
-
-Admin
-   └── possui acesso às operações administrativas
-```
+As migrations versionam alterações estruturais. O seed prepara administrador de demonstração, horários de funcionamento e dados iniciais.
 
 ---
 
-## Endpoints
+## 🛠️ Technology Stack
 
-A URL base da API em produção é:
+| Technology | Responsibility |
+|---|---|
+| Node.js | Ambiente de execução |
+| Express | Construção da API REST |
+| TypeScript | Tipagem estática |
+| PostgreSQL | Persistência relacional |
+| Prisma ORM | Modelagem, migrations e acesso tipado |
+| date-fns | Manipulação de datas |
+| Zod | Validação de entradas |
+| JWT | Autenticação administrativa |
+| bcrypt | Hash de senhas |
+| Helmet | Cabeçalhos HTTP de segurança |
+| CORS | Controle de origens |
+| Express Rate Limit | Limitação de requisições |
+| Vitest | Base para testes automatizados |
+| Supertest | Base para testes HTTP |
+
+---
+
+## 🌐 API Reference
+
+### Base URL
 
 ```text
 https://nexa-agenda-backend-production.up.railway.app/api
 ```
 
----
+### Access Legend
 
-### Health check
+| Access | Description |
+|---|---|
+| Public | Não requer autenticação |
+| Protected | Requer `Authorization: Bearer <token>` |
 
-#### Verificar o funcionamento da API
+### Endpoint Summary
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `GET` | `/api/health` | Public | Verifica a API |
+| `POST` | `/api/auth/login` | Public | Autentica o administrador |
+| `GET` | `/api/auth/me` | Protected | Retorna o administrador autenticado |
+| `GET` | `/api/services` | Public | Lista serviços ativos |
+| `GET` | `/api/services/:id` | Public | Consulta um serviço |
+| `POST` | `/api/services` | Protected | Cria um serviço |
+| `PATCH` | `/api/services/:id` | Protected | Atualiza um serviço |
+| `PATCH` | `/api/services/:id/toggle` | Protected | Ativa ou desativa um serviço |
+| `DELETE` | `/api/services/:id` | Protected | Exclui um serviço |
+| `GET` | `/api/availability` | Public | Consulta horários disponíveis |
+| `GET` | `/api/next-available-slot` | Public | Consulta o próximo horário |
+| `POST` | `/api/appointments` | Public | Cria um agendamento |
+| `POST` | `/api/appointments/lookup` | Public | Consulta por código e telefone |
+| `GET` | `/api/appointments` | Protected | Lista agendamentos |
+| `GET` | `/api/appointments/:id` | Protected | Consulta um agendamento |
+| `PATCH` | `/api/appointments/:id/status` | Protected | Atualiza o status |
+| `PATCH` | `/api/appointments/:id/cancel` | Protected | Cancela um agendamento |
+| `DELETE` | `/api/appointments/:id` | Protected | Exclui um agendamento |
+| `GET` | `/api/appointments/stats/today` | Protected | Estatísticas do dia |
+| `GET` | `/api/appointments/revenue/today` | Protected | Receita prevista do dia |
+| `GET` | `/api/admin/dashboard` | Protected | Indicadores do dashboard |
+
+### Health Check
 
 ```http
 GET /api/health
 ```
-
-Resposta esperada:
 
 ```json
 {
@@ -543,17 +538,12 @@ Resposta esperada:
 }
 ```
 
----
-
-## Autenticação
-
-### Login administrativo
+### Login
 
 ```http
 POST /api/auth/login
+Content-Type: application/json
 ```
-
-Exemplo de requisição:
 
 ```json
 {
@@ -562,101 +552,12 @@ Exemplo de requisição:
 }
 ```
 
-A resposta contém o token JWT utilizado nas rotas protegidas.
-
-### Consultar administrador autenticado
-
-```http
-GET /api/auth/me
-```
-
-Requer autenticação.
-
----
-
-## Serviços
-
-### Listar serviços
-
-```http
-GET /api/services
-```
-
-Rota pública.
-
-### Consultar serviço por ID
-
-```http
-GET /api/services/:id
-```
-
-Rota pública.
-
-### Criar serviço
-
-```http
-POST /api/services
-```
-
-Requer autenticação.
-
-### Atualizar serviço
-
-```http
-PATCH /api/services/:id
-```
-
-Requer autenticação.
-
-### Ativar ou desativar serviço
-
-```http
-PATCH /api/services/:id/toggle
-```
-
-Requer autenticação.
-
-### Excluir serviço
-
-```http
-DELETE /api/services/:id
-```
-
-Requer autenticação.
-
----
-
-## Disponibilidade
-
-### Consultar horários disponíveis
-
-```http
-GET /api/availability
-```
-
-A consulta deve informar os dados necessários para identificar a data e o serviço desejado.
-
-Rota pública.
-
-### Consultar o próximo horário disponível
-
-```http
-GET /api/next-available-slot
-```
-
-Rota pública.
-
----
-
-## Agendamentos públicos
-
-### Criar agendamento
+### Create Appointment
 
 ```http
 POST /api/appointments
+Content-Type: application/json
 ```
-
-Exemplo conceitual de requisição:
 
 ```json
 {
@@ -668,540 +569,359 @@ Exemplo conceitual de requisição:
 }
 ```
 
-Os campos exatos devem seguir os schemas definidos na aplicação.
+> Os nomes e formatos definitivos dos campos devem seguir os schemas do código-fonte.
 
-### Consultar agendamento
+### Lookup Appointment
 
 ```http
 POST /api/appointments/lookup
+Content-Type: application/json
 ```
-
-Exemplo:
 
 ```json
 {
-  "publicCode": "CODIGO",
+  "publicCode": "PUBLIC_CODE",
   "phone": "(11) 99999-9999"
 }
 ```
 
 ---
 
-## Agendamentos administrativos
-
-As rotas abaixo exigem autenticação JWT.
-
-### Listar agendamentos
-
-```http
-GET /api/appointments
-```
-
-### Consultar agendamento por ID
-
-```http
-GET /api/appointments/:id
-```
-
-### Atualizar status
-
-```http
-PATCH /api/appointments/:id/status
-```
-
-### Cancelar agendamento
-
-```http
-PATCH /api/appointments/:id/cancel
-```
-
-### Excluir agendamento
-
-```http
-DELETE /api/appointments/:id
-```
-
-### Consultar estatísticas do dia
-
-```http
-GET /api/appointments/stats/today
-```
-
-### Consultar receita prevista do dia
-
-```http
-GET /api/appointments/revenue/today
-```
-
----
-
-## Dashboard
-
-### Consultar dados do dashboard
-
-```http
-GET /api/admin/dashboard
-```
-
-Requer autenticação.
-
-A rota disponibiliza os indicadores utilizados pelo painel administrativo.
-
----
-
-## Autenticação
-
-As rotas administrativas utilizam autenticação baseada em JSON Web Token.
-
-Após o login, o token deve ser enviado no cabeçalho `Authorization`:
-
-```http
-Authorization: Bearer SEU_TOKEN_JWT
-```
-
-Fluxo simplificado:
+## 🔐 Authentication
 
 ```text
-Administrador envia e-mail e senha
+Administrator submits credentials
               │
               ▼
-API localiza o administrador
+API locates administrator
               │
               ▼
-bcrypt compara a senha
+bcrypt compares password
               │
               ▼
-API gera um token JWT
+API generates JWT
               │
               ▼
-Cliente envia o token nas rotas protegidas
+Client sends Bearer token
               │
               ▼
-Middleware valida o token
+Middleware validates token
               │
               ▼
-Acesso autorizado
+Protected operation is authorized
 ```
 
-A expiração do token pode ser configurada através da variável:
-
-```env
-JWT_EXPIRES_IN=
+```http
+Authorization: Bearer YOUR_TOKEN
 ```
 
 ---
 
-## Segurança
+## ✅ Validation and Error Handling
 
-A API aplica diferentes medidas de segurança.
+Os schemas Zod validam body, parâmetros, query strings, credenciais, filtros e identificadores.
 
-### Hash de senha
+O middleware central de erros oferece:
 
-As senhas administrativas não são armazenadas em texto puro.
+- respostas HTTP consistentes;
+- menor repetição nos controllers;
+- separação entre falha operacional e resposta;
+- manutenção simplificada.
 
-O bcrypt é utilizado para:
+A API pode rejeitar solicitações por:
 
-* gerar o hash;
-* comparar a senha informada no login;
-* impedir a exposição direta da credencial original.
-
-### JWT
-
-As rotas administrativas exigem um token válido.
-
-O middleware de autenticação verifica:
-
-* presença do token;
-* formato do cabeçalho;
-* assinatura;
-* validade;
-* expiração.
-
-### Helmet
-
-O Helmet configura cabeçalhos HTTP relacionados à segurança da aplicação.
-
-### CORS
-
-O CORS restringe as origens autorizadas a consumir a API.
-
-A origem principal é configurada pela variável:
-
-```env
-FRONTEND_URL=
-```
-
-### Rate limiting
-
-O Express Rate Limit reduz o risco de abuso ao limitar a quantidade de requisições realizadas dentro de determinado período.
-
-### Validação de entrada
-
-Os dados recebidos pela API são validados com Zod antes de chegarem às operações principais.
-
-Isso evita que dados incompletos ou incompatíveis sejam persistidos.
-
-### Tratamento centralizado de erros
-
-Os erros da aplicação são encaminhados a um middleware centralizado, garantindo respostas consistentes e evitando a exposição desnecessária de detalhes internos.
+- dados inválidos;
+- credenciais incorretas;
+- token ausente ou inválido;
+- recurso não encontrado;
+- serviço inativo;
+- data ou horário inválido;
+- conflito de agendamento;
+- operação não autorizada.
 
 ---
 
-## Como executar
+## 🛡️ Security
 
-### Pré-requisitos
+| Resource | Role |
+|---|---|
+| bcrypt | Proteção das senhas armazenadas |
+| JWT | Identificação da sessão administrativa |
+| Auth middleware | Proteção das rotas privadas |
+| Zod | Rejeição de entradas inválidas |
+| Helmet | Cabeçalhos HTTP de segurança |
+| CORS | Restrição das origens autorizadas |
+| Rate limit | Redução de abuso e excesso de requisições |
+| Environment variables | Segredos fora do código-fonte |
 
-Antes de iniciar, tenha instalado:
+> [!WARNING]
+> Nunca envie arquivos `.env`, senhas reais, tokens ou credenciais de produção para o repositório.
 
-* Node.js
-* npm
-* PostgreSQL
-* Git
+---
 
-### 1. Clone o repositório
+## 🚀 Running Locally
+
+### Prerequisites
+
+- Node.js 20 ou superior;
+- npm;
+- Git;
+- PostgreSQL.
+
+### Clone and Install
 
 ```bash
 git clone https://github.com/MaximillionDev1/nexa-agenda-backend.git
-```
-
-### 2. Acesse a pasta
-
-```bash
 cd nexa-agenda-backend
-```
-
-### 3. Instale as dependências
-
-```bash
 npm install
 ```
 
-### 4. Configure as variáveis de ambiente
-
-Crie o arquivo `.env` a partir do exemplo:
+### Configure Environment
 
 ```bash
 cp .env.example .env
 ```
 
-No Windows PowerShell, também é possível utilizar:
+Windows PowerShell:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Preencha as variáveis conforme seu ambiente.
-
-### 5. Gere o Prisma Client
+### Prepare Database
 
 ```bash
 npm run prisma:generate
-```
-
-### 6. Execute as migrations
-
-Durante o desenvolvimento:
-
-```bash
 npm run prisma:migrate
-```
-
-Em ambiente de produção:
-
-```bash
-npm run prisma:migrate:deploy
-```
-
-### 7. Execute o seed
-
-```bash
 npm run prisma:seed
 ```
 
-O seed prepara os dados iniciais necessários para demonstração da aplicação.
-
-### 8. Inicie o servidor
+### Start
 
 ```bash
 npm run dev
 ```
 
-A porta utilizada depende da configuração da variável `PORT`.
+```text
+http://localhost:3333
+http://localhost:3333/api/health
+```
 
 ---
 
-## Variáveis de ambiente
-
-O backend utiliza as seguintes variáveis:
+## 🔑 Environment Variables
 
 ```env
 DATABASE_URL=
-NODE_ENV=
-PORT=
+NODE_ENV=development
+PORT=3333
 JWT_SECRET=
-JWT_EXPIRES_IN=
-FRONTEND_URL=
+JWT_EXPIRES_IN=7d
+FRONTEND_URL=http://localhost:5173
 ```
 
-### Descrição
-
-| Variável         | Obrigatória | Descrição                             |
-| ---------------- | ----------: | ------------------------------------- |
-| `DATABASE_URL`   |         Sim | String de conexão com o PostgreSQL    |
-| `NODE_ENV`       |         Sim | Ambiente atual da aplicação           |
-| `PORT`           |         Sim | Porta utilizada pelo servidor         |
-| `JWT_SECRET`     |         Sim | Chave de assinatura dos tokens        |
-| `JWT_EXPIRES_IN` |         Sim | Tempo de expiração do JWT             |
-| `FRONTEND_URL`   |         Sim | Origem principal autorizada pelo CORS |
-
-Exemplo local:
-
-```env
-DATABASE_URL="postgresql://usuario:senha@localhost:5432/nexa_agenda"
-NODE_ENV="development"
-PORT="3333"
-JWT_SECRET="substitua-por-uma-chave-segura"
-JWT_EXPIRES_IN="1d"
-FRONTEND_URL="http://localhost:5173"
-```
-
-> Nunca publique o arquivo `.env` nem utilize a mesma chave JWT em diferentes ambientes.
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | Conexão com PostgreSQL |
+| `NODE_ENV` | Ambiente de execução |
+| `PORT` | Porta HTTP |
+| `JWT_SECRET` | Segredo de assinatura dos tokens |
+| `JWT_EXPIRES_IN` | Validade do token |
+| `FRONTEND_URL` | Origem autorizada no CORS |
 
 ---
 
-## Scripts disponíveis
-
-| Comando                         | Descrição                                    |
-| ------------------------------- | -------------------------------------------- |
-| `npm run dev`                   | Inicia a aplicação em desenvolvimento        |
-| `npm run build`                 | Compila o TypeScript                         |
-| `npm start`                     | Inicia a versão compilada                    |
-| `npm run start:prod`            | Prepara e inicia a aplicação em produção     |
-| `npm run prisma:generate`       | Gera o Prisma Client                         |
-| `npm run prisma:migrate`        | Executa migrations em desenvolvimento        |
-| `npm run prisma:migrate:deploy` | Aplica migrations em produção                |
-| `npm run prisma:seed`           | Executa o seed do banco                      |
-| `npm run prisma:studio`         | Abre a interface visual do Prisma            |
-| `npm run lint`                  | Executa a verificação configurada no projeto |
-| `npm test`                      | Executa os testes com Vitest                 |
-
----
-
-## Prisma Studio
-
-Para visualizar e gerenciar os dados localmente:
+## 🗃️ Database Setup
 
 ```bash
+npm run prisma:migrate
+npm run prisma:migrate:deploy
+npm run prisma:generate
+npm run prisma:seed
 npm run prisma:studio
 ```
 
-O Prisma Studio permite consultar as tabelas e registros por meio de uma interface visual.
+---
 
-> Utilize esta ferramenta com cautela em bancos de produção.
+## 📜 Available Scripts
+
+| Script | Description |
+|---|---|
+| `npm run dev` | Desenvolvimento com watch |
+| `npm run build` | Gera Prisma Client e compila TypeScript |
+| `npm start` | Executa o código compilado |
+| `npm run start:prod` | Aplica migrations e inicia produção |
+| `npm run prisma:generate` | Gera Prisma Client |
+| `npm run prisma:migrate` | Migrations de desenvolvimento |
+| `npm run prisma:migrate:deploy` | Aplica migrations em produção |
+| `npm run prisma:seed` | Executa o seed |
+| `npm run prisma:studio` | Abre Prisma Studio |
+| `npm run lint` | Executa lint |
+| `npm test` | Executa Vitest |
 
 ---
 
-## Deploy
+## ☁️ Deployment
 
-A API está publicada no Railway.
-
-### Backend
-
-```text
-https://nexa-agenda-backend-production.up.railway.app
-```
-
-### Banco de dados
-
-O PostgreSQL utilizado pela aplicação também é disponibilizado no ambiente de produção.
-
-### Processo de produção
-
-O fluxo de deploy inclui:
+| Layer | Platform |
+|---|---|
+| Frontend | Vercel |
+| Backend | Railway |
+| Database | PostgreSQL on Railway |
 
 ```text
-Push para o repositório
-          │
-          ▼
-Railway inicia o build
-          │
-          ▼
-Dependências são instaladas
-          │
-          ▼
-Prisma Client é gerado
-          │
-          ▼
-Migrations são aplicadas
-          │
-          ▼
-Seed prepara os dados necessários
-          │
-          ▼
-Aplicação compilada é iniciada
+GitHub Repository
+        │
+        ▼
+Railway Build
+        │
+        ├── prisma generate
+        ├── TypeScript compilation
+        └── production start
+                │
+                ▼
+        prisma migrate deploy
+                │
+                ▼
+          Express API
+                │
+                ▼
+           PostgreSQL
 ```
 
-As variáveis de ambiente devem ser cadastradas diretamente no serviço de hospedagem.
+Build:
+
+```bash
+npm run build
+```
+
+Start:
+
+```bash
+npm run start:prod
+```
 
 ---
 
-## Decisões técnicas
+## 🎯 Technical Decisions
 
-### TypeScript
+### Layered Architecture
 
-O TypeScript foi utilizado para aumentar a previsibilidade do código, melhorar o suporte da IDE e reduzir erros relacionados a tipos durante o desenvolvimento.
+Routes, controllers, services e repositories possuem responsabilidades distintas.
 
-### Arquitetura em camadas
+### Business Rules on the Backend
 
-A separação entre routes, controllers, services e repositories evita que regras de negócio, responsabilidades HTTP e acesso ao banco fiquem concentrados no mesmo arquivo.
-
-Essa divisão facilita:
-
-* manutenção;
-* leitura;
-* reutilização;
-* testes;
-* evolução do sistema.
+As validações críticas não dependem da interface.
 
 ### Prisma ORM
 
-O Prisma foi escolhido para oferecer:
-
-* acesso tipado ao banco;
-* definição centralizada do schema;
-* gerenciamento de migrations;
-* relacionamentos;
-* Prisma Client;
-* maior produtividade no acesso aos dados.
+Oferece acesso tipado, schema declarativo, migrations, transações e integração com TypeScript.
 
 ### PostgreSQL
 
-O PostgreSQL foi utilizado por se tratar de um banco relacional adequado para dados estruturados e relacionamentos entre serviços e agendamentos.
+Fornece consistência relacional, integridade e suporte a transações.
 
-### Zod
+### JWT Authentication
 
-O Zod centraliza a validação das entradas e impede que dados inválidos avancem até as regras de negócio ou persistência.
+Mantém a API stateless e protege as operações administrativas.
 
-### JWT
+### Transactional Booking
 
-O JWT permite que o backend valide requisições administrativas sem manter sessões armazenadas no servidor.
+A disponibilidade é revalidada antes da persistência para reduzir inconsistências.
 
-### Validação no backend
+### Public Code + Phone
 
-Embora o frontend também valide formulários e horários, o backend é a fonte de verdade.
-
-Toda operação sensível é validada novamente pela API antes da persistência.
-
-### Consulta com código e telefone
-
-A consulta pública combina o código gerado para o agendamento com o telefone do cliente, evitando que apenas um identificador isolado dê acesso às informações.
-
-### Transações
-
-A criação do agendamento utiliza transação para manter as verificações e a persistência dentro de uma operação consistente.
+Permite consulta sem conta, exigindo dois dados relacionados ao agendamento.
 
 ---
 
-## Respostas de erro
+## 🧪 Testing Strategy
 
-A API utiliza tratamento centralizado para retornar respostas consistentes.
+O projeto possui **Vitest** e **Supertest** instalados como base para testes automatizados.
 
-Exemplo conceitual:
+### Recommended Unit Tests
 
-```json
-{
-  "message": "Horário indisponível."
-}
-```
+- normalização de telefone;
+- geração de horários;
+- detecção de sobreposição;
+- validação de datas;
+- cálculo do horário final.
 
-Entre os possíveis erros tratados estão:
+### Recommended Integration Tests
 
-* dados inválidos;
-* credenciais incorretas;
-* token ausente;
-* token inválido;
-* recurso não encontrado;
-* serviço inativo;
-* data inválida;
-* horário fora do funcionamento;
-* conflito de agendamento;
-* erro interno.
+- health check;
+- autenticação;
+- criação de serviço;
+- criação de agendamento;
+- conflito entre horários;
+- consulta pública;
+- proteção de rotas;
+- alteração de status.
 
----
-
-## Integração com o frontend
-
-O frontend consome a API por meio de requisições HTTP.
-
-Fluxo geral:
-
-```text
-Frontend React
-      │
-      │ HTTP / JSON
-      ▼
-API Express
-      │
-      ▼
-Regras de negócio
-      │
-      ▼
-Prisma ORM
-      │
-      ▼
-PostgreSQL
-```
-
-As operações públicas não exigem autenticação.
-
-As operações administrativas enviam o token JWT no cabeçalho `Authorization`.
-
-Repositório do frontend:
-
-```text
-https://github.com/MaximillionDev1/nexa-agenda-frontend
-```
+> As ferramentas estão presentes no projeto, mas esta documentação não apresenta uma cobertura automatizada completa como já implementada.
 
 ---
 
-## Melhorias futuras
+## 💡 What This Project Demonstrates
 
-Algumas evoluções possíveis para versões futuras:
-
-* testes automatizados para os principais fluxos;
-* documentação OpenAPI/Swagger;
-* recuperação de senha;
-* envio de confirmações por e-mail;
-* envio de lembretes por WhatsApp;
-* configuração administrativa dos horários de funcionamento;
-* bloqueio de datas específicas e feriados;
-* múltiplos profissionais;
-* múltiplas unidades;
-* diferentes níveis de permissão;
-* logs estruturados;
-* observabilidade e monitoramento;
-* auditoria das alterações administrativas;
-* filas para processamento de notificações.
-
----
-
-## Repositórios
-
-* **Backend:** https://github.com/MaximillionDev1/nexa-agenda-backend
-* **Frontend:** https://github.com/MaximillionDev1/nexa-agenda-frontend
+- Node.js;
+- Express;
+- TypeScript;
+- APIs REST;
+- arquitetura em camadas;
+- PostgreSQL;
+- Prisma ORM;
+- modelagem de dados;
+- migrations e seed;
+- autenticação JWT;
+- hash de senhas;
+- validação com Zod;
+- regras de negócio;
+- transações;
+- prevenção de conflitos;
+- tratamento centralizado de erros;
+- segurança HTTP;
+- deploy em produção;
+- integração Frontend–Backend;
+- Git e GitHub.
 
 ---
 
-## Autor
+## 🛣️ Roadmap
 
-Desenvolvido por **Matheus Vinicius Rodrigues da Silva**.
-
-* LinkedIn: https://linkedin.com/in/matheus-vinicius-dev
-* GitHub: https://github.com/MaximillionDev1
-* E-mail: [matheusdevsilv4@gmail.com](mailto:matheusdevsilv4@gmail.com)
+- [ ] Ampliar testes unitários.
+- [ ] Criar testes de integração.
+- [ ] Adicionar relatório de cobertura.
+- [ ] Publicar documentação OpenAPI/Swagger.
+- [ ] Adicionar Docker e Docker Compose.
+- [ ] Criar pipeline de CI.
+- [ ] Implementar logs estruturados.
+- [ ] Adicionar monitoramento.
+- [ ] Implementar recuperação de senha.
+- [ ] Adicionar notificações por e-mail.
+- [ ] Integrar lembretes.
+- [ ] Suportar múltiplas empresas.
+- [ ] Permitir configuração administrativa dos horários.
 
 ---
 
-<p align="center">
-  Desenvolvido com Node.js, TypeScript, Express, Prisma e PostgreSQL.
-</p>
+## 👨‍💻 Author
+
+### Matheus Vinicius Rodrigues da Silva
+
+Desenvolvedor Full Stack
+
+- GitHub: [@MaximillionDev1](https://github.com/MaximillionDev1)
+- LinkedIn: [matheus-vinicius-dev](https://linkedin.com/in/matheus-vinicius-dev)
+- E-mail: [matheusdevsilv4@gmail.com](mailto:matheusdevsilv4@gmail.com)
+- Telefone: +55 (11) 94980-5847
+
+---
+
+<div align="center">
+
+Developed with dedication as part of a Full Stack technical challenge.
+
+⭐ Se este projeto foi útil ou interessante, considere deixar uma estrela no repositório.
+
+</div>
