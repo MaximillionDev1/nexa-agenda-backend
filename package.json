@@ -17,6 +17,9 @@
     "lint": "eslint src --ext .ts",
     "test": "vitest"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "dependencies": {
     "@prisma/client": "5.22.0",
     "bcrypt": "^5.1.1",
